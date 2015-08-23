@@ -34,10 +34,12 @@ argument_qty = 5
 tweet_prefix = 'Sample tweet with random control character '
 control_strings = make_control_character()
 
+print control_strings
+
 params = {'argnames': 'tweet',
           'argvalues': [
-              tweet_prefix + u'{} to the left of here.'.
-              format(control_str).encode('utf-8')
+              tweet_prefix + u'{} (at left)'.
+              format(control_str.encode('utf-8'))
               for control_str in control_strings
               ]
          }

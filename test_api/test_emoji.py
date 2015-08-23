@@ -231,7 +231,7 @@ def test_emoji(tweet):
     # Validate returned tweet: content and length.
     assert status.text == tweet.decode('utf-8')
     # Destroy tweet. api.DestroyStatus()
-#    status2 = api.DestroyStatus(status.id)
+    status2 = api.DestroyStatus(status.id)
     # Validate that tweet has been destroyed.
-#    with pytest.raises(twitter.TwitterError):
-#        assert api.DestroyStatus(status.id)
+    with pytest.raises(twitter.TwitterError):
+        assert api.DestroyStatus(status.id)

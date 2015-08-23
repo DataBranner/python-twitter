@@ -3,6 +3,7 @@
 import pytest
 import random
 import struct
+import unicodedata
 
 import config
 api = config.get_api()
@@ -58,17 +59,18 @@ params = {
          }
 params['ids'] = ['\n    ' + argvalue for argvalue in params['argvalues']]
 
-unmatched_chars = []
+unmatched_chars = set()
 # Choose high or low surrogate block at random, then choose one random char.
-for _ in range(argument_qty):
-    utf = random.choice(random.choice([high_surrogates, low_surrogates]))
-    char = unicode_char(int(utf, 16))
-    unmatched_chars.append(char)
+while len(unmatched_chars) < argument_qty:
+    collection = random.choice([high_surrogates, low_surrogates])
+    char = random.randint( int(collection[0], 16), int(collection[1], 16))
+    unmatched_chars.add(unicode_char(char))
 half_pair_params = {
         'argnames': 'tweet, unmatched_char',
         'argvalues': [
-            ('''Sample tweet with unmatched surrogate pair component: {{{}}} '''
-             '''(at left).'''.format(char.encode('utf-8')), char)
+            ('''Sample tweet with unmatched surrogate pair component: {} '''
+             '''({} at left).'''.
+             format(char.encode('utf-8'), repr(char)), char)
              for char in unmatched_chars]
         }
 half_pair_params['ids'] = ['\n    ' + argvalue[0]
@@ -96,7 +98,7 @@ def test_half_surrogate_pairs(tweet, unmatched_char):
     assert unmatched_char not in status.text
     assert unichr(int('FFFD', 16)) in status.text
     # Destroy tweet. api.DestroyStatus()
-    status2 = api.DestroyStatus(status.id)
+#    status2 = api.DestroyStatus(status.id)
     # Validate that tweet has been destroyed.
-    with pytest.raises(twitter.TwitterError):
-        assert api.DestroyStatus(status.id)
+#    with pytest.raises(twitter.TwitterError):
+#        assert api.DestroyStatus(status.id)
