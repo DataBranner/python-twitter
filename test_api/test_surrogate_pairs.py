@@ -8,17 +8,19 @@ import config
 api = config.get_api()
 import twitter
 
+high_surrogates = ('D800', 'DBFF') # including High Private Use Surrogates
+high_surrogates_cjk = ('D840', 'D87E') # This covers mostly CJK.
+low_surrogates = ('DC00', 'DFFF')
+
 def make_surrogate_pair():
     """Generate one random surrogate pair."""
     # Add one character made up of one codepoint each from
     # (High Surrogates + High Private Use Surrogates) and Low Surrogates.
     # We expect each such pair to behave as a single high-codepoint
     # character.
-    high_surrogates = ('D800', 'DBFF') # including High Private Use Surrogates
-    high_surrogates = ('D840', 'D87E') # This covers mostly CJK.
-    low_surrogates = ('DC00', 'DFFF')
     return (unicode_char(random.randint(
-                int(high_surrogates[0], 16), int(high_surrogates[1], 16))) +
+                int(high_surrogates_cjk[0], 16),
+                int(high_surrogates_cjk[1], 16))) +
             unicode_char(random.randint(
                 int(low_surrogates[0], 16), int(low_surrogates[1], 16)))
             )
@@ -47,14 +49,30 @@ for _ in range(argument_qty):
                 for _ in range(surrogate_pair_qty)])
             )
 
-params = {'argnames': 'tweet',
-          'argvalues': [
+params = {
+        'argnames': 'tweet',
+        'argvalues': [
               tweet_prefix + u'{}'.format(surrogate_pair_str).encode('utf-8')
               for surrogate_pair_str in surrogate_pair_strings
               ]
          }
-
 params['ids'] = ['\n    ' + argvalue for argvalue in params['argvalues']]
+
+unmatched_chars = []
+# Choose high or low surrogate block at random, then choose one random char.
+for _ in range(argument_qty):
+    utf = random.choice(random.choice([high_surrogates, low_surrogates]))
+    char = unicode_char(int(utf, 16))
+    unmatched_chars.append(char)
+half_pair_params = {
+        'argnames': 'tweet, unmatched_char',
+        'argvalues': [
+            ('''Sample tweet with unmatched surrogate pair component: {{{}}} '''
+             '''(at left).'''.format(char.encode('utf-8')), char)
+             for char in unmatched_chars]
+        }
+half_pair_params['ids'] = ['\n    ' + argvalue[0]
+        for argvalue in half_pair_params['argvalues']]
 
 ####################
 
@@ -65,7 +83,20 @@ def test_surrogate_pairs(tweet):
     # Validate returned tweet: content and length.
     assert status.text == tweet.decode('utf-8')
     # Destroy tweet. api.DestroyStatus()
-#    status2 = api.DestroyStatus(status.id)
+    status2 = api.DestroyStatus(status.id)
     # Validate that tweet has been destroyed.
-#    with pytest.raises(twitter.TwitterError):
-#        assert api.DestroyStatus(status.id)
+    with pytest.raises(twitter.TwitterError):
+        assert api.DestroyStatus(status.id)
+
+@pytest.mark.parametrize(**half_pair_params)
+def test_half_surrogate_pairs(tweet, unmatched_char):
+    # Post tweet. api.PostUpdate()
+    status = api.PostUpdate(tweet)
+    # Validate returned tweet: content and length.
+    assert unmatched_char not in status.text
+    assert unichr(int('FFFD', 16)) in status.text
+    # Destroy tweet. api.DestroyStatus()
+    status2 = api.DestroyStatus(status.id)
+    # Validate that tweet has been destroyed.
+    with pytest.raises(twitter.TwitterError):
+        assert api.DestroyStatus(status.id)
