@@ -69,7 +69,7 @@ half_pair_params = {
         'argnames': 'tweet, unmatched_char',
         'argvalues': [
             ('''Sample tweet with unmatched surrogate pair component: {} '''
-             '''({} at left).'''.
+             '''({} was posted).'''.
              format(char.encode('utf-8'), repr(char)), char)
              for char in unmatched_chars]
         }
