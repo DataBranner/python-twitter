@@ -200,7 +200,7 @@ def unicode_char(n):
 
 ####################
 # Create parameters
-argument_qty = 5
+argument_qty = 1
 tweet_prefix = 'Sample tweet with random emoji '
 emoji_qty = 20
 emoji_strings = []

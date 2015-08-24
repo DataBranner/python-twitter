@@ -38,7 +38,7 @@ def unicode_char(n):
 
 ####################
 # Create parameters
-argument_qty = 5
+argument_qty = 1
 tweet_prefix = 'Sample tweet with random surrogate-pair characters '
 surrogate_pair_qty = 20
 surrogate_pair_strings = []
@@ -98,7 +98,7 @@ def test_half_surrogate_pairs(tweet, unmatched_char):
     assert unmatched_char not in status.text
     assert unichr(int('FFFD', 16)) in status.text
     # Destroy tweet. api.DestroyStatus()
-#    status2 = api.DestroyStatus(status.id)
+    status2 = api.DestroyStatus(status.id)
     # Validate that tweet has been destroyed.
-#    with pytest.raises(twitter.TwitterError):
-#        assert api.DestroyStatus(status.id)
+    with pytest.raises(twitter.TwitterError):
+        assert api.DestroyStatus(status.id)
