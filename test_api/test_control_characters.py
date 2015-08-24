@@ -38,7 +38,7 @@ print control_strings
 
 params = {'argnames': 'tweet',
           'argvalues': [
-              tweet_prefix + u'{} (at left)'.
+              tweet_prefix + u'{} (here)'.
               format(control_str.encode('utf-8'))
               for control_str in control_strings
               ]
@@ -56,7 +56,7 @@ def test_controls(tweet):
     # Validate returned tweet: content and length.
     assert status.text == tweet.decode('utf-8')
     # Destroy tweet. api.DestroyStatus()
-#    status2 = api.DestroyStatus(status.id)
+    status2 = api.DestroyStatus(status.id)
     # Validate that tweet has been destroyed.
-#    with pytest.raises(twitter.TwitterError):
-#        assert api.DestroyStatus(status.id)
+    with pytest.raises(twitter.TwitterError):
+        assert api.DestroyStatus(status.id)
