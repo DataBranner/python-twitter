@@ -98,7 +98,7 @@ def test_half_surrogate_pairs(tweet, unmatched_char):
     assert unmatched_char not in status.text
     assert unichr(int('FFFD', 16)) in status.text
     # Destroy tweet. api.DestroyStatus()
-    status2 = api.DestroyStatus(status.id)
+#    status2 = api.DestroyStatus(status.id)
     # Validate that tweet has been destroyed.
-    with pytest.raises(twitter.TwitterError):
-        assert api.DestroyStatus(status.id)
+#    with pytest.raises(twitter.TwitterError):
+#        assert api.DestroyStatus(status.id)
